@@ -5,8 +5,16 @@ const config = require('./config.json');
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  /*const resultado = await browser.newPage();
-  let html = '<h1>Apuestas</h1>';*/
+  const resultado = await browser.newPage();
+  let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Page Title</title>
+    </head>
+    <body>
+    <h1>Apuestas</h1>
+  `;
   
   page.on('console', consoleObj => console.log(consoleObj.text()));
   
@@ -54,18 +62,23 @@ const config = require('./config.json');
 
       try {
         page.waitForSelector('.standings.js-standings', {timeout: 4000})
-        const datos = await page.evaluate(c);
+        const datos = await page.evaluate(c, html);
         datosPartidos.push(datos);
-
-        // resultado.setContent(html);
-
       } catch {}
     }
     
   }
 
   console.log(datosPartidos);
-  
+
+  html += `
+    </body>
+    </html>
+  `;
+
+  await resultado.setContent(html);
+  await resultado.close();
+
   await browser.close();
   
   function a() {
@@ -95,7 +108,7 @@ const config = require('./config.json');
     return tablas.length === 1 ? +(document.querySelector('.progress-bar__elapsed').style.width.replace('%','')) : null;
   }
   
-  function c(){
+  function c(html){
 
     const titulo = document.querySelector('.js-event-page-event-name').textContent.trim();
     const migaPan = {
@@ -104,21 +117,22 @@ const config = require('./config.json');
         .reduce((a, s) => {
           return a + ' -> ' + s;
         }),
-    dom: document.querySelector('.breadcrumb').outerHTML
+      dom: document.querySelector('.breadcrumb').outerHTML
     };
 
-    /*html += `
+    html += `
       <h2>${titulo}</h2>
       <p>${migaPan.string}</p>
-    `;*/
+    `;
 
     let standings = Array.from(document.querySelectorAll('.cell.cell--standings'));
 
-    // const domCuotas = document.querySelector('.js-event-page-odds-container').outerHTML;
+    const cuotaSelector = document.querySelector('.js-event-page-odds-container');
+    const domCuotas = cuotaSelector ? cuotaSelector.outerHTML : '';
 
-    /*html += `
+    html += `
       ${domCuotas}
-    `;*/
+    `;
 
     const cuotas = {
         // dom: domCuotas,
@@ -141,10 +155,10 @@ const config = require('./config.json');
 
     standings = standings.map(s => {
 
-      /*html += `
+      html += `
         <h3>Tabla</h3>
         ${s.outerHTML}
-      `;*/
+      `;
 
         const datos = {
             dom: s.outerHTML,
@@ -204,6 +218,11 @@ const config = require('./config.json');
        */
        
        partes = partes.map((p,partesIndex) =>{
+
+          html += `
+            ${p.outerHTML}
+          `;
+
            let ts = Array.from(p.querySelectorAll('.js-event-list-tournament.tournament')).map(t => {
                const h = t.querySelector('.js-event-list-tournament-header');
                const img2 = h.querySelector('.flags').getAttribute('src');
@@ -215,8 +234,6 @@ const config = require('./config.json');
                         .map(c => c.textContent.trim())
                         .reduce((a,s)=> a + ' - ' + s);
                     
-                    // const result = {};
-
                     const partido = Array.from(p.querySelectorAll('.cell__section--main .cell__content.event-team'))
                           .map(e => e.textContent.trim())
                           .map((e,i) => {
@@ -238,14 +255,8 @@ const config = require('./config.json');
                        fecha: fecha,
                        partido: partido,
                        resultado: resultado
-                       // result: result
                     };
-                    // 
                 });
-
-               /*html += `
-                 ${t.outerHTML}
-               `;*/
 
                return {
                    img: img2,
@@ -267,8 +278,8 @@ const config = require('./config.json');
     });
 
     return {
-        /*migaPan: migaPan,
-        titulo: titulo,*/
+        migaPan: migaPan,
+        titulo: titulo,
         standings: standingsObject,
         equipos: equipos,
         lenght: length,
