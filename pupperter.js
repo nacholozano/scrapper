@@ -4,17 +4,7 @@ const config = require('./config.json');
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-
   const resultado = await browser.newPage();
-  let html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <title>Page Title</title>
-    </head>
-    <body>
-    <h1>Apuestas</h1>
-  `;
   
   page.on('console', consoleObj => console.log(consoleObj.text()));
   
@@ -69,14 +59,46 @@ const config = require('./config.json');
     
   }
 
-  console.log(datosPartidos);
+  // console.log(datosPartidos);
 
-  html += `
+  let html = {
+    content: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Page Title</title>
+    </head>
+    <body>
+    <h1>Apuestas</h1>
+  `};
+
+  /*html.content += `
+      <h2>${titulo}</h2>
+      <p>${migaPan.string}</p>
+    `;
+
+  html.content += `
+    ${domCuotas}
+  `;
+
+  html.content += `
+    <h3>Tabla</h3>
+    ${s.outerHTML}
+  `;
+
+  html.content += `
+    ${p.outerHTML}
+  `;*/
+
+  html.content += `
     </body>
     </html>
   `;
 
+  // console.log(html);
+
   await resultado.setContent(html);
+  await resultado.screenshot({path: 'full.png', fullPage: true});
   await resultado.close();
 
   await browser.close();
@@ -120,22 +142,13 @@ const config = require('./config.json');
       dom: document.querySelector('.breadcrumb').outerHTML
     };
 
-    html += `
-      <h2>${titulo}</h2>
-      <p>${migaPan.string}</p>
-    `;
-
     let standings = Array.from(document.querySelectorAll('.cell.cell--standings'));
 
     const cuotaSelector = document.querySelector('.js-event-page-odds-container');
     const domCuotas = cuotaSelector ? cuotaSelector.outerHTML : '';
 
-    html += `
-      ${domCuotas}
-    `;
-
     const cuotas = {
-        // dom: domCuotas,
+        dom: domCuotas,
         datos: Array.from(document.querySelectorAll('.odds__group')).map(grupo => {
 
             const ths = grupo.querySelectorAll('.odds__table th');
@@ -154,11 +167,6 @@ const config = require('./config.json');
     };
 
     standings = standings.map(s => {
-
-      html += `
-        <h3>Tabla</h3>
-        ${s.outerHTML}
-      `;
 
         const datos = {
             dom: s.outerHTML,
@@ -219,10 +227,6 @@ const config = require('./config.json');
        
        partes = partes.map((p,partesIndex) =>{
 
-          html += `
-            ${p.outerHTML}
-          `;
-
            let ts = Array.from(p.querySelectorAll('.js-event-list-tournament.tournament')).map(t => {
                const h = t.querySelector('.js-event-list-tournament-header');
                const img2 = h.querySelector('.flags').getAttribute('src');
@@ -267,9 +271,10 @@ const config = require('./config.json');
            });
 
            return {
-               img: img,
-               nombre: nombre,
-               torneos: ts
+              dom: p.outerHTML,
+              img: img,
+              nombre: nombre,
+              torneos: ts
            };
        });
 
