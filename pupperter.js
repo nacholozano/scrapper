@@ -1,21 +1,32 @@
 const puppeteer = require('puppeteer');
 const config = require('./config.json');
+const fs = require('fs');
 
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  const resultado = await browser.newPage();
   
   page.on('console', consoleObj => console.log(consoleObj.text()));
   
   const base = config.urlBase;
+  const dia = '2018-11-25';
+
+  let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Page Title</title>
+    </head>
+    <body>
+    <h1>Apuestas</h1>
+  `;
   
   page.setViewport({
     width: 1920,
     height: 1080
   });
   
-  await page.goto(config.urlFootball + '/2018-11-25');
+  await page.goto(config.urlFootball + '/' + dia);
   await page.waitFor('.js-event-list-tournament.tournament');
   
   let torneos = JSON.parse(await page.evaluate(a));
@@ -38,10 +49,6 @@ const config = require('./config.json');
 
   }
 
-  /*console.log(torneos.length, ts.length);
-
-  console.log(ts);*/
-
   const datosPartidos = [];
 
   for (let iTorneo = 0; iTorneo < ts.length; iTorneo++) {
@@ -52,54 +59,26 @@ const config = require('./config.json');
 
       try {
         page.waitForSelector('.standings.js-standings', {timeout: 4000})
-        const datos = await page.evaluate(c, html);
+        const datos = await page.evaluate(c);
         datosPartidos.push(datos);
+
+        html += datos.html;
       } catch {}
     }
     
   }
 
-  // console.log(datosPartidos);
-
-  let html = {
-    content: `
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <title>Page Title</title>
-    </head>
-    <body>
-    <h1>Apuestas</h1>
-  `};
-
-  /*html.content += `
-      <h2>${titulo}</h2>
-      <p>${migaPan.string}</p>
-    `;
-
-  html.content += `
-    ${domCuotas}
-  `;
-
-  html.content += `
-    <h3>Tabla</h3>
-    ${s.outerHTML}
-  `;
-
-  html.content += `
-    ${p.outerHTML}
-  `;*/
-
-  html.content += `
+  html += `
     </body>
     </html>
   `;
 
-  // console.log(html);
-
-  await resultado.setContent(html);
-  await resultado.screenshot({path: 'full.png', fullPage: true});
-  await resultado.close();
+  fs.writeFile('./html/' + dia + '.html', html, function(err) {
+    if(err) {
+        return console.log(err);
+    }
+    console.log("The file was saved!");
+  }); 
 
   await browser.close();
   
@@ -130,7 +109,9 @@ const config = require('./config.json');
     return tablas.length === 1 ? +(document.querySelector('.progress-bar__elapsed').style.width.replace('%','')) : null;
   }
   
-  function c(html){
+  function c(){
+
+    let html = '';
 
     const titulo = document.querySelector('.js-event-page-event-name').textContent.trim();
     const migaPan = {
@@ -142,10 +123,19 @@ const config = require('./config.json');
       dom: document.querySelector('.breadcrumb').outerHTML
     };
 
+    html += `
+      <h2>${titulo}</h2>
+      <p>${migaPan.string}</p>
+    `;
+
     let standings = Array.from(document.querySelectorAll('.cell.cell--standings'));
 
     const cuotaSelector = document.querySelector('.js-event-page-odds-container');
     const domCuotas = cuotaSelector ? cuotaSelector.outerHTML : '';
+
+    html += `
+      ${domCuotas}
+    `;
 
     const cuotas = {
         dom: domCuotas,
@@ -165,8 +155,16 @@ const config = require('./config.json');
             return datos;
         })
     };
+    
+    html += `
+      <h3>Tabla</h3>
+    `;
 
     standings = standings.map(s => {
+
+        html += `
+          ${s.outerHTML}
+        `;
 
         const datos = {
             dom: s.outerHTML,
@@ -225,7 +223,11 @@ const config = require('./config.json');
        parte 4 casa liga
        */
        
-       partes = partes.map((p,partesIndex) =>{
+       partes = partes.map((p,partesIndex) =>{  
+
+          html += `
+            ${p.outerHTML}
+          `;
 
            let ts = Array.from(p.querySelectorAll('.js-event-list-tournament.tournament')).map(t => {
                const h = t.querySelector('.js-event-list-tournament-header');
@@ -283,6 +285,7 @@ const config = require('./config.json');
     });
 
     return {
+        html: html,
         migaPan: migaPan,
         titulo: titulo,
         standings: standingsObject,
