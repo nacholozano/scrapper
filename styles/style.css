@@ -1,0 +1,18 @@
+.partido,
+.partido-cuotas,
+.partido-tabla,
+.partido-standing,
+.partido-partes,
+.partido-parte
+{
+  padding: 0.5em;
+  border: 1px solid black;
+}
+
+.partido-cuotas .js-odds-value>span:not(.js-odds-value-decimal){
+  display: none;
+}
+
+.partido-cuotas .collapse-controller{
+  display: none;
+}

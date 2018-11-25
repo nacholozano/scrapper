@@ -10,15 +10,20 @@ const fs = require('fs');
   
   const base = config.urlBase;
   const dia = '2018-11-25';
+  const style = fs.readFileSync('./styles/style.css','utf8');
 
   let html = `
     <!DOCTYPE html>
     <html>
     <head>
-    <title>Page Title</title>
+    <title>Apuestas</title>
+      <style>
+      ${style}
+      </style>
     </head>
     <body>
-    <h1>Apuestas</h1>
+      <div class="container">
+      <h1>Apuestas</h1>
   `;
   
   page.setViewport({
@@ -69,6 +74,7 @@ const fs = require('fs');
   }
 
   html += `
+      </div>
     </body>
     </html>
   `;
@@ -124,8 +130,9 @@ const fs = require('fs');
     };
 
     html += `
-      <h2>${titulo}</h2>
-      <p>${migaPan.string}</p>
+      <div class="partido">
+        <h2 class="partido-titulo">${titulo}</h2>
+        <p class="partido-miga-pan">${migaPan.string}</p>
     `;
 
     let standings = Array.from(document.querySelectorAll('.cell.cell--standings'));
@@ -134,7 +141,9 @@ const fs = require('fs');
     const domCuotas = cuotaSelector ? cuotaSelector.outerHTML : '';
 
     html += `
-      ${domCuotas}
+      <div class="partido-cuotas">
+        ${domCuotas}
+      </div>
     `;
 
     const cuotas = {
@@ -157,13 +166,16 @@ const fs = require('fs');
     };
     
     html += `
-      <h3>Tabla</h3>
+      <div class="partido-tabla">
+        <h3>Tabla</h3>
     `;
 
     standings = standings.map(s => {
 
         html += `
-          ${s.outerHTML}
+          <div class="partido-standing">
+            ${s.outerHTML}
+          </div>
         `;
 
         const datos = {
@@ -199,6 +211,10 @@ const fs = require('fs');
 
         return datos;
     });
+
+    html += `
+      </div>
+    `;
     
     const length = standings.length / 3;
     const standingsObject = {
@@ -222,11 +238,17 @@ const fs = require('fs');
        parte 3 global liga
        parte 4 casa liga
        */
-       
+
+        html += `
+          <div class="partido-partes">
+        `;
+
        partes = partes.map((p,partesIndex) =>{  
 
           html += `
-            ${p.outerHTML}
+            <div class="partido-parte">
+              ${p.outerHTML}
+            </div>
           `;
 
            let ts = Array.from(p.querySelectorAll('.js-event-list-tournament.tournament')).map(t => {
@@ -280,9 +302,17 @@ const fs = require('fs');
            };
        });
 
+      html += `
+        </div>
+      `;
+
        return partes;
        
     });
+
+    html += `
+      </div>
+    `;
 
     return {
         html: html,
