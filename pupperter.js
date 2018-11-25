@@ -167,8 +167,8 @@ const fs = require('fs');
     
     html += `
       <div class="partido-tabla">
-        <h3>Tabla</h3>
     `;
+    //<h3>Tabla</h3>
 
     const length = standings.length / 3;
     const standingsObject = {

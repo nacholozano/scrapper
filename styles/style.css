@@ -16,3 +16,70 @@
 .partido-cuotas .collapse-controller{
   display: none;
 }
+
+.expandOdds{
+  display: none;
+}
+
+.partido+.partido{
+  margin-top: 2em;
+}
+
+.js-expand-odds-container{
+  display: flex;
+  justify-content: space-between;
+}
+
+.js-expand-odds-container .odds__group:last-child{
+  display: none;
+}
+
+.partido-tabla{
+  display: flex;
+  justify-content: space-between;
+}
+
+
+.partido-tabla-parte{
+  margin: 2em;
+  flex: 1;
+}
+
+.partido-standing .cell.cell--standings{
+  display: flex;
+  justify-content: space-between;
+}
+
+.js-event-status-notstarted{
+  display: none;
+}
+
+.js-event-list-tournament-header .cell__section--main{
+  margin-bottom: 2em;
+}
+
+.js-event-list-tournament-events{
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
+.partido-partes {
+  display: flex;
+  justify-content: space-between;
+}
+
+.partido-parte{
+  flex: 1;
+  margin: 1em;
+}
+
+.partido-parte .js-event-status-finished{
+  display: flex;
+  justify-content: space-between;
+}
+
+.partido-parte .js-event-status-finished .cell__section--main{
+  margin-bottom: 1em;
+}
+
