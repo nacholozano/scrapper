@@ -170,13 +170,33 @@ const fs = require('fs');
         <h3>Tabla</h3>
     `;
 
-    standings = standings.map(s => {
+    const length = standings.length / 3;
+    const standingsObject = {
+        all: standings,
+        global: standings.slice(0,length),
+        home: standings.slice(length, length*2 ),
+        away: standings.slice(length*2, standings.length)
+    };
+
+    standings = standings.map((s,standingIndex) => {
+
+        if (standingIndex === 0 || standingIndex === length || standingIndex === length*2 ) {
+          html += `
+            <div class="partido-tabla-parte">
+          `;
+        }
 
         html += `
           <div class="partido-standing">
             ${s.outerHTML}
           </div>
         `;
+
+        if (standingIndex === length-1 || standingIndex === length*2-1 || standingIndex === length*3-1 ) {
+          html += `
+            </div>
+          `;
+        }
 
         const datos = {
             dom: s.outerHTML,
@@ -216,14 +236,6 @@ const fs = require('fs');
       </div>
     `;
     
-    const length = standings.length / 3;
-    const standingsObject = {
-        all: standings,
-        global: standings.slice(0,length),
-        home: standings.slice(length, length*2 ),
-        away: standings.slice(length*2, standings.length)
-    };
-
     let equipos = Array.from(document.querySelectorAll('.l__col--1.matches__column')).slice(0,2);
     
     equipos = equipos.map((e,equipoIndex) => {
@@ -324,6 +336,5 @@ const fs = require('fs');
         cuotas: cuotas
     };
 }
-
     
 })();
