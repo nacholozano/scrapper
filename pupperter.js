@@ -2,6 +2,24 @@ const puppeteer = require('puppeteer');
 const config = require('./config.json');
 const fs = require('fs');
 
+const ligasNoAdmitidas = [
+  'CONMEBOL Libertadores',
+  'MLS, Playoffs',
+  'Primera A, Finalizacion Playoffs',
+  'Eliteserien, Relegation/Promotion',
+  'Allsvenskan, Relegation/Promotion',
+  'AFF Suzuki Cup, Group B',
+  'Primera Division, Apertura Playoffs',
+  'Prva HNL Academy, Juniori',
+  'J.League 2, Promotion Playoffs',
+  '1st Division, Relegation / Promotion Playoffs',
+  'Taça de Portugal',
+  'Youth League',
+  '3. Lig, Group 1',
+  '3. Lig, Group 2',
+  '3. Lig, Group 3',
+];
+
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
@@ -34,11 +52,13 @@ const fs = require('fs');
   await page.goto(config.urlFootball + '/' + dia);
   await page.waitFor('.js-event-list-tournament.tournament');
   
-  let torneos = JSON.parse(await page.evaluate(a));
+  let torneos = JSON.parse(await page.evaluate(a, ligasNoAdmitidas));
 
   const ts = [];
   
-  for (let index = 0; index < torneos.slice(0,5).length; index++) {
+  // .slice(0,25)
+
+  for (let index = 0; index < torneos.length; index++) {
     const t = torneos[index];
     await page.goto(base + t.link);  
     
@@ -86,9 +106,10 @@ const fs = require('fs');
     console.log("The file was saved!");
   }); 
 
+  await page.close();
   await browser.close();
   
-  function a() {
+  function a(ligasNoAdmitidas) {
     const torneos = Array.from(document.body.querySelectorAll('.js-event-list-tournament.tournament'));
     return JSON.stringify(torneos.filter(t => {
       return t.querySelector('.js-event-list-tournament-header .tournament__name');
@@ -107,6 +128,9 @@ const fs = require('fs');
           };
         })
       };
+    })
+    .filter(t => {
+      return ligasNoAdmitidas.indexOf(t.name) === -1;
     }) );
   }
 
